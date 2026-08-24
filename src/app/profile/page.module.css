@@ -1,0 +1,42 @@
+.page {
+  min-height: 100vh;
+  background: var(--stone);
+}
+
+.body {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 32px 60px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 28px;
+  color: var(--ink-navy);
+  margin: 0 0 6px 0;
+}
+
+.subheading {
+  font-size: 14px;
+  color: #6b6559;
+  margin: 0 0 32px 0;
+}
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  max-width: 620px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    flex-direction: column;
+  }
+}
