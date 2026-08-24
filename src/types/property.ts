@@ -14,6 +14,8 @@ export interface Property {
   baths: number;
   areaSqm: number;
   imageSeed: string;
+  ownerId: string;
+  ownerName: string;
 }
 
 export interface PropertyFilters {

@@ -95,6 +95,9 @@
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .listBtn:hover {

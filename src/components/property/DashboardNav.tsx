@@ -8,12 +8,14 @@ interface DashboardNavProps {
   query?: string;
   onQueryChange?: (query: string) => void;
   userName?: string;
+  hideCart?: boolean;
 }
 
 export default function DashboardNav({
   query = "",
   onQueryChange,
   userName = "Asha Gurung",
+  hideCart = false,
 }: DashboardNavProps) {
   const { cartIds } = useCart();
 
@@ -54,26 +56,28 @@ export default function DashboardNav({
       )}
 
       <div className={styles.actions}>
-        <button type="button" className={styles.listBtn}>
+        <Link href="/seller/new" className={styles.listBtn}>
           List a property
-        </button>
-
-        <Link href="/cart" className={styles.cartLink} aria-label="View cart">
-          <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
-            <path
-              d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2"
-              stroke="var(--stone)"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle cx="10" cy="20.5" r="1.4" fill="var(--stone)" />
-            <circle cx="17" cy="20.5" r="1.4" fill="var(--stone)" />
-          </svg>
-          {cartIds.length > 0 && (
-            <span className={styles.cartBadge}>{cartIds.length}</span>
-          )}
         </Link>
+
+        {!hideCart && (
+          <Link href="/cart" className={styles.cartLink} aria-label="View cart">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
+              <path
+                d="M3 4h2l2.4 12.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L21 8H6.2"
+                stroke="var(--stone)"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="10" cy="20.5" r="1.4" fill="var(--stone)" />
+              <circle cx="17" cy="20.5" r="1.4" fill="var(--stone)" />
+            </svg>
+            {cartIds.length > 0 && (
+              <span className={styles.cartBadge}>{cartIds.length}</span>
+            )}
+          </Link>
+        )}
 
         <Link href="/profile" className={styles.avatar} title={userName}>
           {initials}
