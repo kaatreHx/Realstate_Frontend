@@ -73,6 +73,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         <div className={styles.statLine}>
           {property.beds > 0 && <span>{property.beds} BD</span>}
           {property.baths > 0 && <span>{property.baths} BA</span>}
+          {property.parking > 0 && <span>{property.parking} PK</span>}
           <span>{property.areaSqm} M²</span>
         </div>
       </div>
