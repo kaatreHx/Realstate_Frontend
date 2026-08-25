@@ -24,10 +24,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "Apartment",
     beds: 2,
     baths: 2,
+    parking: 1,
     areaSqm: 86,
     imageSeed: "meridian-1",
     ownerId: "u-seller-1",
     ownerName: "Asha Gurung",
+    latitude: 27.7172,
+    longitude: 85.324,
   },
   {
     id: "p2",
@@ -40,10 +43,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "House",
     beds: 4,
     baths: 3,
+    parking: 2,
     areaSqm: 210,
     imageSeed: "meridian-2",
     ownerId: "u-seller-1",
     ownerName: "Asha Gurung",
+    latitude: 27.6588,
+    longitude: 85.3247,
   },
   {
     id: "p3",
@@ -56,10 +62,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "Apartment",
     beds: 1,
     baths: 1,
+    parking: 0,
     areaSqm: 42,
     imageSeed: "meridian-3",
     ownerId: "u-seller-2",
     ownerName: "Bikash Shrestha",
+    latitude: 27.7089,
+    longitude: 85.3206,
   },
   {
     id: "p4",
@@ -72,10 +81,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "Land",
     beds: 0,
     baths: 0,
+    parking: 0,
     areaSqm: 320,
     imageSeed: "meridian-4",
     ownerId: "u-seller-2",
     ownerName: "Bikash Shrestha",
+    latitude: 27.671,
+    longitude: 85.4298,
   },
   {
     id: "p5",
@@ -88,10 +100,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "Apartment",
     beds: 2,
     baths: 1,
+    parking: 1,
     areaSqm: 78,
     imageSeed: "meridian-5",
     ownerId: "u-seller-1",
     ownerName: "Asha Gurung",
+    latitude: 27.7215,
+    longitude: 85.3157,
   },
   {
     id: "p6",
@@ -104,10 +119,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "Commercial",
     beds: 0,
     baths: 1,
+    parking: 3,
     areaSqm: 150,
     imageSeed: "meridian-6",
     ownerId: "u-seller-1",
     ownerName: "Asha Gurung",
+    latitude: 27.6644,
+    longitude: 85.3188,
   },
   {
     id: "p7",
@@ -120,10 +138,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "House",
     beds: 3,
     baths: 2,
+    parking: 2,
     areaSqm: 165,
     imageSeed: "meridian-7",
     ownerId: "u-seller-3",
     ownerName: "Priya Maharjan",
+    latitude: 27.6737,
+    longitude: 85.4341,
   },
   {
     id: "p8",
@@ -136,10 +157,13 @@ export const MOCK_PROPERTIES: Property[] = [
     type: "Apartment",
     beds: 1,
     baths: 1,
+    parking: 0,
     areaSqm: 54,
     imageSeed: "meridian-8",
     ownerId: "u-seller-3",
     ownerName: "Priya Maharjan",
+    latitude: 27.7098,
+    longitude: 85.3355,
   },
 ];
 
@@ -191,6 +215,10 @@ export function formatPrice(price: number, status: Property["status"]) {
   return status === "For Rent" ? `${formatted}/mo` : formatted;
 }
 
+// Kathmandu Valley — used as the default map center until the seller
+// picks (or is located at) a real spot.
+export const DEFAULT_MAP_CENTER = { latitude: 27.7172, longitude: 85.324 };
+
 export interface NewPropertyInput {
   title: string;
   address: string;
@@ -200,7 +228,10 @@ export interface NewPropertyInput {
   type: PropertyType;
   beds: number;
   baths: number;
+  parking: number;
   areaSqm: number;
+  latitude: number;
+  longitude: number;
 }
 
 // Builds a Property from the "List a property" form. Replace this with

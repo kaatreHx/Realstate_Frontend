@@ -12,10 +12,13 @@ export interface Property {
   type: PropertyType;
   beds: number;
   baths: number;
+  parking: number;
   areaSqm: number;
   imageSeed: string;
   ownerId: string;
   ownerName: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface PropertyFilters {
