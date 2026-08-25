@@ -13,14 +13,14 @@ import {
 import type { ListingStatus, PropertyType } from "@/types/property";
 import styles from "./ListPropertyForm.module.css";
 
-const PROPERTY_TYPES: PropertyType[] = [
+const PROPERTY_TYPES: PropertyType[] = [ //Pre defined types of property
   "House",
   "Apartment",
   "Land",
   "Commercial",
 ];
 
-const STATUS_OPTIONS: ListingStatus[] = ["For Sale", "For Rent"];
+const STATUS_OPTIONS: ListingStatus[] = ["For Sale", "For Rent"]; //Pre defined status of property
 
 interface FormState {
   title: string;
