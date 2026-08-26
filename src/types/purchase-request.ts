@@ -1,5 +1,10 @@
 export type PurchaseRequestStatus = "Pending" | "Accepted" | "Declined";
 
+export interface PurchaseRequestDocument {
+  id: string;
+  name: string;
+}
+
 export interface PurchaseRequest {
   id: string;
   propertyId: string;
@@ -10,4 +15,5 @@ export interface PurchaseRequest {
   message: string;
   status: PurchaseRequestStatus;
   submittedAt: string; // ISO date string
+  documents?: PurchaseRequestDocument[];
 }

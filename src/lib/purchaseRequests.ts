@@ -23,6 +23,10 @@ export const MOCK_PURCHASE_REQUESTS: PurchaseRequest[] = [
     message: "Full asking price, pre-approved financing. Can move quickly.",
     status: "Pending",
     submittedAt: "2026-08-21T14:02:00Z",
+    documents: [
+      { id: "d1", name: "proof-of-funds.pdf" },
+      { id: "d2", name: "pre-approval-letter.pdf" },
+    ],
   },
   {
     id: "r3",
@@ -93,4 +97,35 @@ export function formatRequestDate(iso: string): string {
     month: "short",
     day: "numeric",
   }).format(new Date(iso));
+}
+
+export interface NewPurchaseRequestInput {
+  propertyId: string;
+  buyerName: string;
+  buyerEmail: string;
+  offerPrice: number | null;
+  message: string;
+  documentNames: string[];
+}
+
+// Builds a PurchaseRequest from the buyer's "Make a purchase request"
+// form. Replace this with a real POST to your backend once the
+// requests endpoint exists, e.g. POST `${API_BASE_URL}/properties/:id/requests`
+export function createPurchaseRequest(
+  input: NewPurchaseRequestInput
+): PurchaseRequest {
+  return {
+    id: `r-${Date.now()}`,
+    propertyId: input.propertyId,
+    buyerName: input.buyerName,
+    buyerEmail: input.buyerEmail,
+    offerPrice: input.offerPrice,
+    message: input.message,
+    status: "Pending",
+    submittedAt: new Date().toISOString(),
+    documents: input.documentNames.map((name, i) => ({
+      id: `doc-${Date.now()}-${i}`,
+      name,
+    })),
+  };
 }

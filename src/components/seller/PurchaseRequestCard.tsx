@@ -52,6 +52,16 @@ export default function PurchaseRequestCard({
 
       <p className={styles.message}>{request.message}</p>
 
+      {request.documents && request.documents.length > 0 && (
+        <ul className={styles.attachments}>
+          {request.documents.map((doc) => (
+            <li key={doc.id} className={styles.attachment}>
+              📎 {doc.name}
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className={styles.footer}>
         <span className={styles.statusTag} data-status={request.status}>
           {request.status}

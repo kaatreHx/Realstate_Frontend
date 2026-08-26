@@ -5,7 +5,9 @@ import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import LocationPicker from "@/components/seller/LocationPicker";
-import PropertyDocumentsSection from "@/components/seller/PropertyDocumentsSection";
+import DocumentUploader, {
+  type UploadedDoc,
+} from "@/components/shared/DocumentUploader";
 import {
   CURRENT_SELLER_ID,
   CURRENT_SELLER_NAME,
@@ -14,8 +16,14 @@ import {
   formatPrice,
 } from "@/lib/properties";
 import type { ListingStatus, PropertyType } from "@/types/property";
-import type { PropertyDocument } from "@/types/property-document";
 import styles from "./ListPropertyForm.module.css";
+
+const PROPERTY_DOCUMENT_OPTIONS = [
+  { value: "ownership_deed", label: "Ownership deed / lalpurja" },
+  { value: "land_survey", label: "Land survey / naksa" },
+  { value: "tax_clearance", label: "Tax clearance certificate" },
+  { value: "other", label: "Other" },
+];
 
 const PROPERTY_TYPES: PropertyType[] = [
   "House",
@@ -113,7 +121,7 @@ function computeErrors(form: FormState): FormErrors {
 export default function ListPropertyForm() {
   const [activeStep, setActiveStep] = useState<StepId>("details");
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
-  const [documents, setDocuments] = useState<PropertyDocument[]>([]);
+  const [documents, setDocuments] = useState<UploadedDoc[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -430,7 +438,13 @@ export default function ListPropertyForm() {
 
           {activeStep === "documents" && (
             <div role="tabpanel">
-              <PropertyDocumentsSection documents={documents} onChange={setDocuments} />
+              <DocumentUploader
+                title="Supporting documents"
+                description="Add ownership proof and other paperwork buyers may ask for — ownership deed, land survey, or a tax clearance certificate. PDF, JPG, or PNG, under 10MB each."
+                options={PROPERTY_DOCUMENT_OPTIONS}
+                documents={documents}
+                onChange={setDocuments}
+              />
             </div>
           )}
         </div>

@@ -1,38 +1,49 @@
 "use client";
 
 import { useRef } from "react";
-import type { PropertyDocument, PropertyDocumentType } from "@/types/property-document";
-import styles from "./PropertyDocumentsSection.module.css";
+import styles from "./DocumentUploader.module.css";
 
-const DOCUMENT_OPTIONS: { value: PropertyDocumentType; label: string }[] = [
-  { value: "ownership_deed", label: "Ownership deed / lalpurja" },
-  { value: "land_survey", label: "Land survey / naksa" },
-  { value: "tax_clearance", label: "Tax clearance certificate" },
-  { value: "other", label: "Other" },
-];
-
-interface PropertyDocumentsSectionProps {
-  documents: PropertyDocument[];
-  onChange: (documents: PropertyDocument[]) => void;
+export interface DocumentTypeOption {
+  value: string;
+  label: string;
 }
 
-export default function PropertyDocumentsSection({
+export interface UploadedDoc {
+  id: string;
+  type: string;
+  file: File;
+}
+
+interface DocumentUploaderProps {
+  title: string;
+  description: string;
+  options: DocumentTypeOption[];
+  documents: UploadedDoc[];
+  onChange: (documents: UploadedDoc[]) => void;
+  uploadLabel?: string;
+}
+
+export default function DocumentUploader({
+  title,
+  description,
+  options,
   documents,
   onChange,
-}: PropertyDocumentsSectionProps) {
+  uploadLabel = "Upload documents",
+}: DocumentUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function addFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
-    const additions: PropertyDocument[] = Array.from(fileList).map((file) => ({
+    const additions: UploadedDoc[] = Array.from(fileList).map((file) => ({
       id: `${file.name}-${file.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
-      type: "other",
+      type: options[0]?.value ?? "other",
       file,
     }));
     onChange([...documents, ...additions]);
   }
 
-  function updateType(id: string, type: PropertyDocumentType) {
+  function updateType(id: string, type: string) {
     onChange(documents.map((doc) => (doc.id === id ? { ...doc, type } : doc)));
   }
 
@@ -42,12 +53,8 @@ export default function PropertyDocumentsSection({
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.title}>Supporting documents</h2>
-      <p className={styles.description}>
-        Add ownership proof and other paperwork buyers may ask for —
-        ownership deed, land survey, or a tax clearance certificate. PDF,
-        JPG, or PNG, under 10MB each.
-      </p>
+      <h2 className={styles.title}>{title}</h2>
+      <p className={styles.description}>{description}</p>
 
       <button
         type="button"
@@ -55,7 +62,7 @@ export default function PropertyDocumentsSection({
         onClick={() => fileInputRef.current?.click()}
       >
         <span className={styles.dropzoneIcon}>+</span>
-        <span className={styles.dropzoneText}>Upload documents</span>
+        <span className={styles.dropzoneText}>{uploadLabel}</span>
       </button>
       <input
         ref={fileInputRef}
@@ -80,11 +87,9 @@ export default function PropertyDocumentsSection({
               <select
                 className={styles.select}
                 value={doc.type}
-                onChange={(e) =>
-                  updateType(doc.id, e.target.value as PropertyDocumentType)
-                }
+                onChange={(e) => updateType(doc.id, e.target.value)}
               >
-                {DOCUMENT_OPTIONS.map((opt) => (
+                {options.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>

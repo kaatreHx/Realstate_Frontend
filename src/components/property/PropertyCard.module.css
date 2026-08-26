@@ -1,9 +1,16 @@
+.cardLink {
+  display: contents;
+  text-decoration: none;
+  color: inherit;
+}
+
 .card {
   background: var(--white);
   border: 1px solid var(--stone-dim);
   border-radius: 6px;
   overflow: hidden;
   transition: border-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
 .card:hover {
