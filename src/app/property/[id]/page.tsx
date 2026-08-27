@@ -3,12 +3,11 @@ import PropertyDetailView from "@/components/property/PropertyDetailView";
 import { MOCK_PROPERTIES } from "@/lib/properties";
 
 interface PropertyDetailPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
-export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
-  const { id } = await params;
-  const property = MOCK_PROPERTIES.find((p) => p.id === id);
+export default function PropertyDetailPage({ params }: PropertyDetailPageProps) {
+  const property = MOCK_PROPERTIES.find((p) => p.id === params.id);
 
   if (!property) {
     notFound();

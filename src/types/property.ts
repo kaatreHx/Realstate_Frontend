@@ -19,6 +19,7 @@ export interface Property {
   ownerName: string;
   latitude: number;
   longitude: number;
+  createdAt: string; // ISO date
 }
 
 export interface PropertyFilters {

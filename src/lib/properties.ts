@@ -31,6 +31,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Asha Gurung",
     latitude: 27.7172,
     longitude: 85.324,
+    createdAt: "2026-03-14T09:00:00Z",
   },
   {
     id: "p2",
@@ -50,6 +51,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Asha Gurung",
     latitude: 27.6588,
     longitude: 85.3247,
+    createdAt: "2026-03-28T09:00:00Z",
   },
   {
     id: "p3",
@@ -69,6 +71,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Bikash Shrestha",
     latitude: 27.7089,
     longitude: 85.3206,
+    createdAt: "2026-05-02T09:00:00Z",
   },
   {
     id: "p4",
@@ -88,6 +91,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Bikash Shrestha",
     latitude: 27.671,
     longitude: 85.4298,
+    createdAt: "2026-05-20T09:00:00Z",
   },
   {
     id: "p5",
@@ -107,6 +111,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Asha Gurung",
     latitude: 27.7215,
     longitude: 85.3157,
+    createdAt: "2026-06-10T09:00:00Z",
   },
   {
     id: "p6",
@@ -126,6 +131,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Asha Gurung",
     latitude: 27.6644,
     longitude: 85.3188,
+    createdAt: "2026-07-05T09:00:00Z",
   },
   {
     id: "p7",
@@ -145,6 +151,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Priya Maharjan",
     latitude: 27.6737,
     longitude: 85.4341,
+    createdAt: "2026-07-22T09:00:00Z",
   },
   {
     id: "p8",
@@ -164,6 +171,7 @@ export const MOCK_PROPERTIES: Property[] = [
     ownerName: "Priya Maharjan",
     latitude: 27.7098,
     longitude: 85.3355,
+    createdAt: "2026-08-08T09:00:00Z",
   },
 ];
 
@@ -250,5 +258,6 @@ export function createDraftProperty(
     imageSeed: `meridian-${id}`,
     ownerId,
     ownerName,
+    createdAt: new Date().toISOString(),
   };
 }

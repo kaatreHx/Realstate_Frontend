@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/properties", label: "Properties" },
   { href: "/admin/requests", label: "Purchase requests" },
+  { href: "/admin/kyc", label: "KYC review" },
   { href: "/admin/users", label: "Users" },
 ];
 

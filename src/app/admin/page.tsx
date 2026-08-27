@@ -8,6 +8,7 @@ import {
   formatRequestDate,
 } from "@/lib/purchaseRequests";
 import { MOCK_USERS } from "@/lib/users";
+import { MOCK_KYC_APPLICATIONS } from "@/lib/kycApplications";
 import styles from "./page.module.css";
 
 export default function AdminOverviewPage() {
@@ -22,6 +23,8 @@ export default function AdminOverviewPage() {
 
   const totalSellers = MOCK_USERS.filter((u) => u.role === "seller").length;
   const totalBuyers = MOCK_USERS.filter((u) => u.role === "buyer").length;
+
+  const pendingKyc = MOCK_KYC_APPLICATIONS.filter((a) => a.status === "pending").length;
 
   const listedValue = MOCK_PROPERTIES.filter((p) => p.status === "For Sale").reduce(
     (sum, p) => sum + p.price,
@@ -69,6 +72,11 @@ export default function AdminOverviewPage() {
           label="Users"
           value={MOCK_USERS.length}
           sublabel={`${totalSellers} sellers · ${totalBuyers} buyers`}
+        />
+        <StatCard
+          label="KYC review"
+          value={pendingKyc}
+          sublabel="applications pending"
         />
         <StatCard label="Listed value (for sale)" value={listedValueLabel} />
       </div>

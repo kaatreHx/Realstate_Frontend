@@ -7,6 +7,7 @@ import styles from "./SellerSubNav.module.css";
 const TABS = [
   { href: "/seller/new", label: "List a property" },
   { href: "/seller/listings", label: "My listings & requests" },
+  { href: "/seller/growth", label: "Growth stats" },
 ];
 
 export default function SellerSubNav() {
