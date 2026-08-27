@@ -7,6 +7,42 @@ export interface KycApplication extends KycState {
   userEmail: string;
 }
 
+// Mocked signed-in seller (matches the mock profile in PersonalDetailsSection)
+// until real auth wires the profile page up to a logged-in user id.
+export const CURRENT_SELLER_ID = "u-seller-1";
+
+const STORAGE_KEY = "meridian_kyc_applications";
+
+// Local persistence so an admin's decision on /admin/kyc is visible on the
+// seller's /profile page without a backend. Replace with a real fetch to
+// GET/PATCH `${API_BASE_URL}/admin/kyc` once that endpoint exists.
+export function loadKycApplications(): KycApplication[] {
+  if (typeof window === "undefined") return MOCK_KYC_APPLICATIONS;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw) as KycApplication[];
+  } catch {
+    // malformed/unavailable storage — fall back to the seed data below
+  }
+  return MOCK_KYC_APPLICATIONS;
+}
+
+export function saveKycApplications(applications: KycApplication[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
+  } catch {
+    // storage unavailable (private browsing, quota) — decision still applies for this session
+  }
+}
+
+export function getKycApplicationForUser(
+  applications: KycApplication[],
+  userId: string
+): KycApplication | undefined {
+  return applications.find((app) => app.userId === userId);
+}
+
 // Replace this with a real fetch to your backend once an admin/kyc
 // endpoint exists, e.g. GET `${API_BASE_URL}/admin/kyc`
 export const MOCK_KYC_APPLICATIONS: KycApplication[] = [

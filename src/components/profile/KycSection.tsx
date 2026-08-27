@@ -1,9 +1,15 @@
 "use client";
 
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { submitKyc } from "@/lib/api";
+import {
+  CURRENT_SELLER_ID,
+  loadKycApplications,
+  saveKycApplications,
+  type KycApplication,
+} from "@/lib/kycApplications";
 import type { KycDocumentType, KycStatus } from "@/types/kyc";
 import styles from "./ProfileSection.module.css";
 import kycStyles from "./KycSection.module.css";
@@ -31,11 +37,27 @@ export default function KycSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [rejectionNote, setRejectionNote] = useState<string | null>(null);
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
 
   const isLocked = status === "pending" || status === "verified";
+
+  // Pull this seller's current KYC state (including any admin rejection
+  // note) so the review outcome shows up here without a page they'd have
+  // to poll a backend for.
+  useEffect(() => {
+    const mine = loadKycApplications().find(
+      (app) => app.userId === CURRENT_SELLER_ID
+    );
+    if (!mine) return;
+    setStatus(mine.status);
+    setDocumentType(mine.documentType);
+    setDocumentNumber(mine.documentNumber);
+    setFullNameOnDocument(mine.fullNameOnDocument);
+    setRejectionNote(mine.status === "rejected" ? mine.note ?? null : null);
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -58,7 +80,34 @@ export default function KycSection() {
         { front: frontFile, back: backFile }
       );
       setStatus(result.status);
+      setRejectionNote(null);
       setSuccessMsg("Documents submitted. Review usually takes 1–2 business days.");
+
+      // Keep the admin review queue in sync with this (re)submission.
+      const applications = loadKycApplications();
+      const existingIndex = applications.findIndex(
+        (app) => app.userId === CURRENT_SELLER_ID
+      );
+      const updatedApp: KycApplication = {
+        id: existingIndex >= 0 ? applications[existingIndex].id : `kyc-${CURRENT_SELLER_ID}`,
+        userId: CURRENT_SELLER_ID,
+        userName: existingIndex >= 0 ? applications[existingIndex].userName : fullNameOnDocument,
+        userEmail: existingIndex >= 0 ? applications[existingIndex].userEmail : "",
+        documentType,
+        documentNumber,
+        fullNameOnDocument,
+        frontFileName: frontFile.name,
+        backFileName: backFile?.name ?? null,
+        status: result.status,
+        submittedAt: new Date().toISOString(),
+        note: undefined,
+      };
+      if (existingIndex >= 0) {
+        applications[existingIndex] = updatedApp;
+      } else {
+        applications.push(updatedApp);
+      }
+      saveKycApplications(applications);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't submit your documents.");
     } finally {
@@ -81,6 +130,11 @@ export default function KycSection() {
             {STATUS_LABEL[status]}
           </span>
         </div>
+        {status === "rejected" && rejectionNote && (
+          <p className={kycStyles.rejectedNote}>
+            <strong>Reason for rejection:</strong> {rejectionNote}
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className={styles.card} noValidate>
@@ -95,6 +149,12 @@ export default function KycSection() {
             {status === "verified"
               ? "Your identity is already verified — contact support to update your documents."
               : "Your documents are under review. You can resubmit once a decision is made."}
+          </p>
+        )}
+
+        {status === "rejected" && (
+          <p className={kycStyles.resubmitNote}>
+            Update the details below based on the reason above, then resubmit for another review.
           </p>
         )}
 

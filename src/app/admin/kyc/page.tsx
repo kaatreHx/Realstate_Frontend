@@ -1,12 +1,14 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import tableStyles from "@/components/admin/AdminTable.module.css";
 import styles from "./page.module.css";
 import {
   MOCK_KYC_APPLICATIONS,
   formatSubmittedDate,
+  loadKycApplications,
+  saveKycApplications,
   type KycApplication,
 } from "@/lib/kycApplications";
 import type { KycStatus } from "@/types/kyc";
@@ -38,6 +40,13 @@ export default function AdminKycPage() {
   const [statusFilter, setStatusFilter] = useState<KycStatus | "All">("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
+  const [rejectError, setRejectError] = useState<string | null>(null);
+
+  // Hydrate from local storage so decisions made in a previous session (or
+  // by the seller resubmitting on /profile) are reflected here.
+  useEffect(() => {
+    setApplications(loadKycApplications());
+  }, []);
 
   const rows = useMemo(() => {
     return applications
@@ -55,22 +64,33 @@ export default function AdminKycPage() {
     if (expandedId === app.id) {
       setExpandedId(null);
       setNoteDraft("");
+      setRejectError(null);
     } else {
       setExpandedId(app.id);
       setNoteDraft(app.note ?? "");
+      setRejectError(null);
     }
   }
 
   function decide(id: string, status: KycStatus) {
+    if (status === "rejected" && !noteDraft.trim()) {
+      setRejectError("Add a note explaining why this application is being rejected.");
+      return;
+    }
+
     // Mocked — no admin/kyc endpoint exists yet, see lib/api.ts::submitKyc
-    // for the shape of the real submission this would review.
-    setApplications((prev) =>
-      prev.map((app) =>
+    // for the shape of the real submission this would review. Persisted to
+    // local storage so the seller's profile page can show the decision.
+    setApplications((prev) => {
+      const updated = prev.map((app) =>
         app.id === id ? { ...app, status, note: noteDraft.trim() || undefined } : app
-      )
-    );
+      );
+      saveKycApplications(updated);
+      return updated;
+    });
     setExpandedId(null);
     setNoteDraft("");
+    setRejectError(null);
   }
 
   return (
@@ -140,6 +160,11 @@ export default function AdminKycPage() {
                       >
                         {STATUS_LABEL[app.status]}
                       </span>
+                      {app.note && app.status !== "pending" && (
+                        <div className={tableStyles.muted} title={app.note}>
+                          {app.note}
+                        </div>
+                      )}
                     </td>
                     <td>
                       <button
@@ -172,16 +197,22 @@ export default function AdminKycPage() {
                           </p>
 
                           <label className={styles.noteLabel} htmlFor={`note-${app.id}`}>
-                            Reviewer note (optional)
+                            Reviewer note (required to reject)
                           </label>
                           <textarea
                             id={`note-${app.id}`}
                             className={styles.noteInput}
                             rows={2}
                             value={noteDraft}
-                            onChange={(e) => setNoteDraft(e.target.value)}
+                            onChange={(e) => {
+                              setNoteDraft(e.target.value);
+                              if (rejectError) setRejectError(null);
+                            }}
                             placeholder="e.g. Name mismatch, please resubmit."
                           />
+                          {rejectError && expandedId === app.id && (
+                            <p className={styles.rejectError}>{rejectError}</p>
+                          )}
 
                           <div className={styles.decisionRow}>
                             <button
