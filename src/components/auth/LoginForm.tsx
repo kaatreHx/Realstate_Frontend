@@ -27,8 +27,19 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
-      await login({ email, password, keepSignedIn });
-      router.push("/");
+      const response = await login({ email, password, keepSignedIn });
+
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("user", JSON.stringify(response.user));
+
+        router.push("/dashboard");
+      } else {
+        setFormError("Invalid credentials");
+      }
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "Couldn't sign you in. Try again."
