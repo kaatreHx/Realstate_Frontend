@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import styles from "./DashboardNav.module.css";
@@ -18,6 +19,20 @@ export default function DashboardNav({
   hideCart = false,
 }: DashboardNavProps) {
   const { cartIds } = useCart();
+  const [isAgent, setIsAgent] = useState(false);
+
+  useEffect(() => {
+    try {
+      let data: string | null | undefined = localStorage.getItem("user");
+
+      if (data) {
+        const parsed = JSON.parse(data);
+        setIsAgent(!!parsed?.isAgent);
+      }
+    } catch {
+      setIsAgent(false);
+    }
+  }, []);
 
   const initials = userName
     .split(" ")
@@ -56,9 +71,11 @@ export default function DashboardNav({
       )}
 
       <div className={styles.actions}>
-        <Link href="/seller/new" className={styles.listBtn}>
-          List a property
-        </Link>
+        {isAgent && (
+          <Link href="/seller/new" className={styles.listBtn}>
+            List a property
+          </Link>
+        )}
 
         {!hideCart && (
           <Link href="/cart" className={styles.cartLink} aria-label="View cart">
