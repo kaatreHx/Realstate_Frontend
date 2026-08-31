@@ -33,8 +33,18 @@ export default function RegisterForm() {
 
     setIsLoading(true);
     try {
-      await register({ firstName, lastName, email, password, isAgent });
-      router.push("/");
+      const response = await register({ firstName, lastName, email, password, isAgent });
+
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("user", JSON.stringify(response.user));
+        router.push("/dashboard");
+      } else {
+        setFormError("Registration failed. Please try again.");
+      }
     } catch (err) {
       setFormError(
         err instanceof Error
