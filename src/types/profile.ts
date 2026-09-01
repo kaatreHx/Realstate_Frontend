@@ -3,7 +3,6 @@ export interface UserProfile {
   lastName: string;
   email: string;
   phone: string;
-  bio: string;
 }
 
 export interface PasswordChangePayload {
