@@ -3,7 +3,6 @@ import type {
   LoginPayload,
   RegisterPayload,
 } from "@/types/auth";
-import type { PasswordChangePayload, UserProfile } from "@/types/profile";
 import type { KycState, KycSubmission } from "@/types/kyc";
 
 const API_BASE_URL =
@@ -33,14 +32,6 @@ export function login(payload: LoginPayload) {
 
 export function register(payload: RegisterPayload) {
   return request<AuthResponse>("/auth/register", payload);
-}
-
-export function updateProfile(payload: UserProfile) {
-  return request<UserProfile>("/users/me", payload);
-}
-
-export function changePassword(payload: PasswordChangePayload) {
-  return request<{ success: boolean }>("/users/me/password", payload);
 }
 
 export async function submitKyc(
