@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { changePassword } from "@/lib/api";
+import { changePassword } from "@/lib/users";
 import styles from "./ProfileSection.module.css";
 import secStyles from "./PasswordSecuritySection.module.css";
 
