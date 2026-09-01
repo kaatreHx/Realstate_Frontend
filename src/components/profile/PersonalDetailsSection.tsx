@@ -1,25 +1,37 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { updateProfile } from "@/lib/api";
+import { updateProfile, me } from "@/lib/users";
 import type { UserProfile } from "@/types/profile";
 import styles from "./ProfileSection.module.css";
 
-const MOCK_PROFILE: UserProfile = {
-  firstName: "Asha",
-  lastName: "Gurung",
-  email: "asha.gurung@email.com",
-  phone: "+977 98-0000-0000",
-  bio: "Looking for a two-bed apartment in Kathmandu, ideally near the river.",
-};
 
 export default function PersonalDetailsSection() {
-  const [profile, setProfile] = useState<UserProfile>(MOCK_PROFILE);
+  const [profile, setProfile] = useState<UserProfile>({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: ""
+  });
+
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  async function getUser() {
+    try {
+      const data = await me();
+      setProfile(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't get your profile.");
+    }
+  }
+
+  useEffect(() => {
+    getUser();
+  }, []);
 
   function updateField<K extends keyof UserProfile>(key: K, value: UserProfile[K]) {
     setProfile((p) => ({ ...p, [key]: value }));
@@ -83,20 +95,6 @@ export default function PersonalDetailsSection() {
         value={profile.phone}
         onChange={(e) => updateField("phone", e.target.value)}
       />
-
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="bio">
-          About
-        </label>
-        <textarea
-          id="bio"
-          className={styles.textarea}
-          rows={3}
-          value={profile.bio}
-          onChange={(e) => updateField("bio", e.target.value)}
-          placeholder="What kind of property are you looking for?"
-        />
-      </div>
 
       {error && <p className={styles.error}>{error}</p>}
       {status && <p className={styles.success}>{status}</p>}
