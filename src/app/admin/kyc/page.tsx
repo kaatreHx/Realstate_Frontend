@@ -15,22 +15,23 @@ import type { KycStatus } from "@/types/kyc";
 
 const STATUS_FILTERS: (KycStatus | "All")[] = [
   "All",
-  "pending",
-  "verified",
-  "rejected",
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
 ];
 
 const STATUS_LABEL: Record<KycStatus, string> = {
   not_submitted: "Not submitted",
-  pending: "Pending review",
-  verified: "Verified",
-  rejected: "Rejected",
+  PENDING: "Pending review",
+  APPROVED: "Verified",
+  REJECTED: "Rejected",
 };
 
 const DOCUMENT_LABEL: Record<KycApplication["documentType"], string> = {
-  citizenship: "Citizenship certificate",
-  passport: "Passport",
-  national_id: "National ID card",
+  CITIZENSHIP: "Citizenship certificate",
+  PASSPORT: "Passport",
+  NATIONAL_ID: "National ID card",
+  DRIVERS_LICENSE: "Driver's license",
 };
 
 export default function AdminKycPage() {
@@ -58,7 +59,7 @@ export default function AdminKycPage() {
       );
   }, [applications, statusFilter]);
 
-  const pendingCount = applications.filter((a) => a.status === "pending").length;
+  const pendingCount = applications.filter((a) => a.status === "PENDING").length;
 
   function toggleExpanded(app: KycApplication) {
     if (expandedId === app.id) {
@@ -67,13 +68,13 @@ export default function AdminKycPage() {
       setRejectError(null);
     } else {
       setExpandedId(app.id);
-      setNoteDraft(app.note ?? "");
+      setNoteDraft(app.rejectReason ?? "");
       setRejectError(null);
     }
   }
 
   function decide(id: string, status: KycStatus) {
-    if (status === "rejected" && !noteDraft.trim()) {
+    if (status === "REJECTED" && !noteDraft.trim()) {
       setRejectError("Add a note explaining why this application is being rejected.");
       return;
     }
@@ -83,7 +84,7 @@ export default function AdminKycPage() {
     // local storage so the seller's profile page can show the decision.
     setApplications((prev) => {
       const updated = prev.map((app) =>
-        app.id === id ? { ...app, status, note: noteDraft.trim() || undefined } : app
+        app.id === id ? { ...app, status, rejectReason: noteDraft.trim() || undefined } : app
       );
       saveKycApplications(updated);
       return updated;
@@ -125,7 +126,7 @@ export default function AdminKycPage() {
               <tr>
                 <th>Applicant</th>
                 <th>Document</th>
-                <th>Name on document</th>
+                <th>Full legal name</th>
                 <th>Submitted</th>
                 <th>Status</th>
                 <th></th>
@@ -143,7 +144,11 @@ export default function AdminKycPage() {
                       <div>{DOCUMENT_LABEL[app.documentType]}</div>
                       <div className={tableStyles.muted}>{app.documentNumber}</div>
                     </td>
-                    <td>{app.fullNameOnDocument}</td>
+                    <td>
+                      {[app.firstName, app.middleName, app.lastName]
+                        .filter(Boolean)
+                        .join(" ")}
+                    </td>
                     <td className={tableStyles.muted}>
                       {formatSubmittedDate(app.submittedAt)}
                     </td>
@@ -151,18 +156,18 @@ export default function AdminKycPage() {
                       <span
                         className={tableStyles.tag}
                         data-tone={
-                          app.status === "verified"
+                          app.status === "APPROVED"
                             ? "accepted"
-                            : app.status === "rejected"
+                            : app.status === "REJECTED"
                               ? "declined"
                               : undefined
                         }
                       >
                         {STATUS_LABEL[app.status]}
                       </span>
-                      {app.note && app.status !== "pending" && (
-                        <div className={tableStyles.muted} title={app.note}>
-                          {app.note}
+                      {app.rejectReason && app.status !== "PENDING" && (
+                        <div className={tableStyles.muted} title={app.rejectReason}>
+                          {app.rejectReason}
                         </div>
                       )}
                     </td>
@@ -183,11 +188,16 @@ export default function AdminKycPage() {
                         <div className={styles.detailPanel}>
                           <div className={styles.fileRow}>
                             <span className={styles.fileChip}>
-                              📎 Front: {app.frontFileName ?? "not provided"}
+                              📎 Front: {app.documentFrontFileName ?? "not provided"}
                             </span>
-                            {app.backFileName && (
+                            {app.documentBackFileName && (
                               <span className={styles.fileChip}>
-                                📎 Back: {app.backFileName}
+                                📎 Back: {app.documentBackFileName}
+                              </span>
+                            )}
+                            {app.selfieFileName && (
+                              <span className={styles.fileChip}>
+                                📎 Selfie: {app.selfieFileName}
                               </span>
                             )}
                           </div>
@@ -218,14 +228,14 @@ export default function AdminKycPage() {
                             <button
                               type="button"
                               className={styles.rejectBtn}
-                              onClick={() => decide(app.id, "rejected")}
+                              onClick={() => decide(app.id, "REJECTED")}
                             >
                               Reject
                             </button>
                             <button
                               type="button"
                               className={styles.approveBtn}
-                              onClick={() => decide(app.id, "verified")}
+                              onClick={() => decide(app.id, "APPROVED")}
                             >
                               Approve
                             </button>

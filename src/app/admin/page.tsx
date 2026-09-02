@@ -7,7 +7,7 @@ import {
   MOCK_PURCHASE_REQUESTS,
   formatRequestDate,
 } from "@/lib/purchaseRequests";
-import { MOCK_USERS } from "@/lib/users";
+// import { MOCK_USERS } from "@/lib/users";
 import { MOCK_KYC_APPLICATIONS } from "@/lib/kycApplications";
 import styles from "./page.module.css";
 
@@ -21,8 +21,8 @@ export default function AdminOverviewPage() {
   const accepted = MOCK_PURCHASE_REQUESTS.filter((r) => r.status === "Accepted").length;
   const declined = MOCK_PURCHASE_REQUESTS.filter((r) => r.status === "Declined").length;
 
-  const totalSellers = MOCK_USERS.filter((u) => u.role === "seller").length;
-  const totalBuyers = MOCK_USERS.filter((u) => u.role === "buyer").length;
+  // const totalSellers = MOCK_USERS.filter((u) => u.role === "seller").length;
+  // const totalBuyers = MOCK_USERS.filter((u) => u.role === "buyer").length;
 
   const pendingKyc = MOCK_KYC_APPLICATIONS.filter((a) => a.status === "pending").length;
 
@@ -70,8 +70,8 @@ export default function AdminOverviewPage() {
         />
         <StatCard
           label="Users"
-          value={MOCK_USERS.length}
-          sublabel={`${totalSellers} sellers · ${totalBuyers} buyers`}
+        // value={MOCK_USERS.length}
+        // sublabel={`${totalSellers} sellers · ${totalBuyers} buyers`}
         />
         <StatCard
           label="KYC review"
@@ -118,10 +118,10 @@ export default function AdminOverviewPage() {
                 <td>
                   {request.offerPrice !== null
                     ? new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        maximumFractionDigits: 0,
-                      }).format(request.offerPrice)
+                      style: "currency",
+                      currency: "USD",
+                      maximumFractionDigits: 0,
+                    }).format(request.offerPrice)
                     : "—"}
                 </td>
                 <td>

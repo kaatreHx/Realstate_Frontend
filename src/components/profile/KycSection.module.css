@@ -27,17 +27,17 @@
   color: #8a8474;
 }
 
-.status_pending {
+.status_PENDING {
   background: rgba(185, 139, 78, 0.18);
   color: var(--brass-dim);
 }
 
-.status_verified {
+.status_APPROVED {
   background: rgba(124, 138, 115, 0.18);
   color: var(--sage);
 }
 
-.status_rejected {
+.status_REJECTED {
   background: rgba(179, 73, 47, 0.14);
   color: var(--error);
 }
@@ -128,4 +128,125 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.stepCircle {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1.5px solid var(--stone-dim);
+  color: #8a8474;
+  background: var(--stone);
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.stepCircle_active {
+  border-color: var(--brass);
+  color: var(--brass);
+  background: rgba(185, 139, 78, 0.12);
+}
+
+.stepCircle_done {
+  border-color: var(--sage);
+  background: var(--sage);
+  color: #fff;
+}
+
+.stepLabel {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8a8474;
+  white-space: nowrap;
+}
+
+.stepLabel_active {
+  color: var(--brass-dim);
+}
+
+.stepLine {
+  flex: 1;
+  height: 1.5px;
+  background: var(--stone-dim);
+  margin: 0 4px;
+}
+
+.stepLine_done {
+  background: var(--sage);
+}
+
+.stepHeading {
+  margin: 0 0 4px 0;
+}
+
+.stepDescription {
+  margin: 0 0 20px 0;
+}
+
+.stepActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.stepActionsRight {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.reviewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+  margin-bottom: 20px;
+}
+
+.reviewItem {
+  font-size: 13px;
+}
+
+.reviewLabel {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #8a8474;
+  margin-bottom: 2px;
+}
+
+.reviewValue {
+  color: #3a362e;
+}
+
+@media (max-width: 640px) {
+  .stepLabel {
+    display: none;
+  }
+  .reviewGrid {
+    grid-template-columns: 1fr;
+  }
 }
