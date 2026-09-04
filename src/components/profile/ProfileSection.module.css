@@ -24,10 +24,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+  min-width: 0;
 }
 
 .field {
   margin-bottom: 20px;
+  min-width: 0;
 }
 
 .label {

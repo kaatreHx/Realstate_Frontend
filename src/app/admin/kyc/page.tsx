@@ -5,13 +5,12 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import tableStyles from "@/components/admin/AdminTable.module.css";
 import styles from "./page.module.css";
 import {
-  MOCK_KYC_APPLICATIONS,
+  decideKycApplication,
+  fetchAdminKycApplications,
   formatSubmittedDate,
-  loadKycApplications,
-  saveKycApplications,
-  type KycApplication,
+  getFileUrl,
 } from "@/lib/kycApplications";
-import type { KycStatus } from "@/types/kyc";
+import type { KycApplication, KycStatus } from "@/types/kyc";
 
 const STATUS_FILTERS: (KycStatus | "All")[] = [
   "All",
@@ -35,19 +34,26 @@ const DOCUMENT_LABEL: Record<KycApplication["documentType"], string> = {
 };
 
 export default function AdminKycPage() {
-  const [applications, setApplications] = useState<KycApplication[]>(
-    MOCK_KYC_APPLICATIONS
-  );
+  const [applications, setApplications] = useState<KycApplication[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<KycStatus | "All">("All");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [rejectError, setRejectError] = useState<string | null>(null);
+  const [isDeciding, setIsDeciding] = useState(false);
 
-  // Hydrate from local storage so decisions made in a previous session (or
-  // by the seller resubmitting on /profile) are reflected here.
   useEffect(() => {
-    setApplications(loadKycApplications());
+    refresh();
   }, []);
+
+  function refresh() {
+    setIsLoading(true);
+    fetchAdminKycApplications()
+      .then(setApplications)
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Couldn't load applications."))
+      .finally(() => setIsLoading(false));
+  }
 
   const rows = useMemo(() => {
     return applications
@@ -73,25 +79,24 @@ export default function AdminKycPage() {
     }
   }
 
-  function decide(id: string, status: KycStatus) {
+  async function decide(id: string, status: "APPROVED" | "REJECTED") {
     if (status === "REJECTED" && !noteDraft.trim()) {
       setRejectError("Add a note explaining why this application is being rejected.");
       return;
     }
 
-    // Mocked — no admin/kyc endpoint exists yet, see lib/api.ts::submitKyc
-    // for the shape of the real submission this would review. Persisted to
-    // local storage so the seller's profile page can show the decision.
-    setApplications((prev) => {
-      const updated = prev.map((app) =>
-        app.id === id ? { ...app, status, rejectReason: noteDraft.trim() || undefined } : app
-      );
-      saveKycApplications(updated);
-      return updated;
-    });
-    setExpandedId(null);
-    setNoteDraft("");
-    setRejectError(null);
+    setIsDeciding(true);
+    try {
+      const updated = await decideKycApplication(id, status, noteDraft.trim() || undefined);
+      setApplications((prev) => prev.map((app) => (app.id === id ? updated : app)));
+      setExpandedId(null);
+      setNoteDraft("");
+      setRejectError(null);
+    } catch (err) {
+      setRejectError(err instanceof Error ? err.message : "Couldn't save the decision.");
+    } finally {
+      setIsDeciding(false);
+    }
   }
 
   return (
@@ -117,139 +122,160 @@ export default function AdminKycPage() {
         </select>
       </div>
 
-      <div className={tableStyles.tableWrap}>
-        {rows.length === 0 ? (
-          <p className={tableStyles.emptyState}>No applications match that filter.</p>
-        ) : (
-          <table className={tableStyles.table}>
-            <thead>
-              <tr>
-                <th>Applicant</th>
-                <th>Document</th>
-                <th>Full legal name</th>
-                <th>Submitted</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((app) => (
-                <Fragment key={app.id}>
-                  <tr>
-                    <td>
-                      <div>{app.userName}</div>
-                      <div className={tableStyles.muted}>{app.userEmail}</div>
-                    </td>
-                    <td>
-                      <div>{DOCUMENT_LABEL[app.documentType]}</div>
-                      <div className={tableStyles.muted}>{app.documentNumber}</div>
-                    </td>
-                    <td>
-                      {[app.firstName, app.middleName, app.lastName]
-                        .filter(Boolean)
-                        .join(" ")}
-                    </td>
-                    <td className={tableStyles.muted}>
-                      {formatSubmittedDate(app.submittedAt)}
-                    </td>
-                    <td>
-                      <span
-                        className={tableStyles.tag}
-                        data-tone={
-                          app.status === "APPROVED"
-                            ? "accepted"
-                            : app.status === "REJECTED"
-                              ? "declined"
-                              : undefined
-                        }
-                      >
-                        {STATUS_LABEL[app.status]}
-                      </span>
-                      {app.rejectReason && app.status !== "PENDING" && (
-                        <div className={tableStyles.muted} title={app.rejectReason}>
-                          {app.rejectReason}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        className={styles.reviewBtn}
-                        onClick={() => toggleExpanded(app)}
-                      >
-                        {expandedId === app.id ? "Close" : "Review"}
-                      </button>
-                    </td>
-                  </tr>
-
-                  {expandedId === app.id && (
+      {isLoading ? (
+        <p className={tableStyles.emptyState}>Loading applications…</p>
+      ) : loadError ? (
+        <p className={tableStyles.emptyState}>{loadError}</p>
+      ) : (
+        <div className={tableStyles.tableWrap}>
+          {rows.length === 0 ? (
+            <p className={tableStyles.emptyState}>No applications match that filter.</p>
+          ) : (
+            <table className={tableStyles.table}>
+              <thead>
+                <tr>
+                  <th>Applicant</th>
+                  <th>Document</th>
+                  <th>Full legal name</th>
+                  <th>Submitted</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((app) => (
+                  <Fragment key={app.id}>
                     <tr>
-                      <td colSpan={6}>
-                        <div className={styles.detailPanel}>
-                          <div className={styles.fileRow}>
-                            <span className={styles.fileChip}>
-                              📎 Front: {app.documentFrontFileName ?? "not provided"}
-                            </span>
-                            {app.documentBackFileName && (
-                              <span className={styles.fileChip}>
-                                📎 Back: {app.documentBackFileName}
-                              </span>
-                            )}
-                            {app.selfieFileName && (
-                              <span className={styles.fileChip}>
-                                📎 Selfie: {app.selfieFileName}
-                              </span>
-                            )}
+                      <td>
+                        <div>{app.userName}</div>
+                        <div className={tableStyles.muted}>{app.userEmail}</div>
+                      </td>
+                      <td>
+                        <div>{DOCUMENT_LABEL[app.documentType]}</div>
+                        <div className={tableStyles.muted}>{app.documentNumber}</div>
+                      </td>
+                      <td>
+                        {[app.firstName, app.middleName, app.lastName]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </td>
+                      <td className={tableStyles.muted}>
+                        {formatSubmittedDate(app.submittedAt)}
+                      </td>
+                      <td>
+                        <span
+                          className={tableStyles.tag}
+                          data-tone={
+                            app.status === "APPROVED"
+                              ? "accepted"
+                              : app.status === "REJECTED"
+                                ? "declined"
+                                : undefined
+                          }
+                        >
+                          {STATUS_LABEL[app.status]}
+                        </span>
+                        {app.rejectReason && app.status !== "PENDING" && (
+                          <div className={tableStyles.muted} title={app.rejectReason}>
+                            {app.rejectReason}
                           </div>
-                          <p className={styles.mockNote}>
-                            Preview isn&apos;t available in this mock — a real
-                            integration would show the uploaded images here.
-                          </p>
-
-                          <label className={styles.noteLabel} htmlFor={`note-${app.id}`}>
-                            Reviewer note (required to reject)
-                          </label>
-                          <textarea
-                            id={`note-${app.id}`}
-                            className={styles.noteInput}
-                            rows={2}
-                            value={noteDraft}
-                            onChange={(e) => {
-                              setNoteDraft(e.target.value);
-                              if (rejectError) setRejectError(null);
-                            }}
-                            placeholder="e.g. Name mismatch, please resubmit."
-                          />
-                          {rejectError && expandedId === app.id && (
-                            <p className={styles.rejectError}>{rejectError}</p>
-                          )}
-
-                          <div className={styles.decisionRow}>
-                            <button
-                              type="button"
-                              className={styles.rejectBtn}
-                              onClick={() => decide(app.id, "REJECTED")}
-                            >
-                              Reject
-                            </button>
-                            <button
-                              type="button"
-                              className={styles.approveBtn}
-                              onClick={() => decide(app.id, "APPROVED")}
-                            >
-                              Approve
-                            </button>
-                          </div>
-                        </div>
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className={styles.reviewBtn}
+                          onClick={() => toggleExpanded(app)}
+                        >
+                          {expandedId === app.id ? "Close" : "Review"}
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+
+                    {expandedId === app.id && (
+                      <tr>
+                        <td colSpan={6}>
+                          <div className={styles.detailPanel}>
+                            <div className={styles.fileRow}>
+                              {app.documentFrontUrl && (
+                                <a
+                                  className={styles.fileChip}
+                                  href={getFileUrl(app.documentFrontUrl)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  📎 View front
+                                </a>
+                              )}
+                              {app.documentBackUrl && (
+                                <a
+                                  className={styles.fileChip}
+                                  href={getFileUrl(app.documentBackUrl)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  📎 View back
+                                </a>
+                              )}
+                              {app.selfieUrl && (
+                                <a
+                                  className={styles.fileChip}
+                                  href={getFileUrl(app.selfieUrl)}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  📎 View selfie
+                                </a>
+                              )}
+                            </div>
+
+                            <label className={styles.noteLabel} htmlFor={`note-${app.id}`}>
+                              Reviewer note (required to reject)
+                            </label>
+                            <textarea
+                              id={`note-${app.id}`}
+                              className={styles.noteInput}
+                              rows={2}
+                              value={noteDraft}
+                              onChange={(e) => {
+                                setNoteDraft(e.target.value);
+                                if (rejectError) setRejectError(null);
+                              }}
+                              placeholder="e.g. Name mismatch, please resubmit."
+                            />
+                            {rejectError && expandedId === app.id && (
+                              <p className={styles.rejectError}>{rejectError}</p>
+                            )}
+
+                            <div className={styles.decisionRow}>
+                              <button
+                                type="button"
+                                className={styles.rejectBtn}
+                                onClick={() => decide(app.id, "REJECTED")}
+                                disabled={isDeciding}
+                              >
+                                Reject
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.approveBtn}
+                                onClick={() => decide(app.id, "APPROVED")}
+                                disabled={isDeciding}
+                              >
+                                Approve
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   );
 }
