@@ -25,15 +25,26 @@ export interface KycSubmission {
   street: string;
   city: string;
   zip: string;
-
-  // File Uploads (Proof) — file names only, for display/local state
-  documentFrontFileName: string | null;
-  documentBackFileName: string | null;
-  selfieFileName: string | null;
 }
 
 export interface KycState extends KycSubmission {
   status: KycStatus;
   submittedAt: string | null;
   rejectReason?: string | null;
+
+  // Server-side file paths for whatever was last uploaded, e.g.
+  // "/uploads/kyc/xyz-documentFront-123.jpg". Null until something's
+  // been uploaded for that slot.
+  documentFrontUrl: string | null;
+  documentBackUrl: string | null;
+  selfieUrl: string | null;
+}
+
+// Shape returned by the admin KYC review endpoints — a KycState plus
+// which applicant it belongs to.
+export interface KycApplication extends KycState {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
 }
